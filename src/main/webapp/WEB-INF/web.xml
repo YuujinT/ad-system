@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>ad-site</display-name>
+
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
+
+    <context-param>
+        <param-name>upload.dir</param-name>
+        <param-value>D:/Softs/Web/uploads</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/auth/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdAssetServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.AdAssetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdAssetServlet</servlet-name>
+        <url-pattern>/console/assets</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>NormalAdServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.NormalAdServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NormalAdServlet</servlet-name>
+        <url-pattern>/api/normalAd</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>VideoAdServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.VideoAdServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VideoAdServlet</servlet-name>
+        <url-pattern>/api/getVideoAd</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>InterestIngestServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.InterestIngestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InterestIngestServlet</servlet-name>
+        <url-pattern>/api/collectInterest</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HealthServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.HealthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/health</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>UploadAssetServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.UploadAssetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UploadAssetServlet</servlet-name>
+        <url-pattern>/console/assets/upload</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteAssetServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.DeleteAssetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteAssetServlet</servlet-name>
+        <url-pattern>/console/assets/delete</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AssetFileServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.AssetFileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AssetFileServlet</servlet-name>
+        <url-pattern>/uploads/*</url-pattern>
+    </servlet-mapping>
+
+</web-app>
