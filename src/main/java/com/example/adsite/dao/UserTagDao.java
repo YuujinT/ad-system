@@ -85,10 +85,19 @@ public class UserTagDao {
 
     public Optional<String> findDominantTag(String userId) {
         Map<String, Integer> counts = findTagCounts(userId);
-        return counts.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .filter(entry -> entry.getValue() > 0)
-                .map(Map.Entry::getKey);
+        if (counts.isEmpty()) {
+            return Optional.empty();
+        }
+        int max = counts.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+        if (max <= 0) {
+            return Optional.empty();
+        }
+        for (String column : TAG_COLUMNS) {
+            if (counts.getOrDefault(column, 0) == max) {
+                return Optional.of(column);
+            }
+        }
+        return Optional.empty();
     }
 
     private void ensureUserExists(String userId) {

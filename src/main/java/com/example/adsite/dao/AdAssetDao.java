@@ -99,6 +99,23 @@ public class AdAssetDao {
         }
     }
 
+    public Optional<AdAsset> findById(long assetId, String ownerId) {
+        String sql = "SELECT * FROM ad_assets WHERE id = ? AND owner_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, assetId);
+            statement.setString(2, ownerId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Unable to load asset", e);
+        }
+    }
+
     private AdAsset mapRow(ResultSet rs) throws SQLException {
         return new AdAsset(
                 rs.getLong("id"),
