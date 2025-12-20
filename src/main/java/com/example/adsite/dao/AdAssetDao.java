@@ -37,7 +37,7 @@ public class AdAssetDao {
     }
 
     public Optional<AdAsset> findAnyAd(AdAsset.Format format) {
-        String sql = "SELECT * FROM ad_assets WHERE content_type LIKE ? ORDER BY id ASC LIMIT 1";
+        String sql = "SELECT * FROM ad_assets WHERE content_type LIKE ? ORDER BY RAND() LIMIT 1";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, format == AdAsset.Format.VIDEO ? "video%" : "image%");

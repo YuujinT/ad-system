@@ -10,6 +10,15 @@
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
 
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.example.adsite.filter.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <context-param>
         <param-name>upload.dir</param-name>
         <param-value>D:/Softs/Web/uploads</param-value>
@@ -43,21 +52,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>NormalAdServlet</servlet-name>
-        <servlet-class>com.example.adsite.controller.NormalAdServlet</servlet-class>
+        <servlet-name>AdApiServlet</servlet-name>
+        <servlet-class>com.example.adsite.controller.AdApiServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>NormalAdServlet</servlet-name>
-        <url-pattern>/api/normalAd</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>VideoAdServlet</servlet-name>
-        <servlet-class>com.example.adsite.controller.VideoAdServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>VideoAdServlet</servlet-name>
-        <url-pattern>/api/getVideoAd</url-pattern>
+        <servlet-name>AdApiServlet</servlet-name>
+        <url-pattern>/api/ad</url-pattern>
     </servlet-mapping>
 
     <servlet>
