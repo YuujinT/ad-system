@@ -1,195 +1,229 @@
 ------
 
-# 跨站匿名个性化广告投放实验 — 开发文档
+# ad-system
 
-## 1. 项目概述
+Web应用开发实验大作业
 
-### 1.1  项目结构（站点职能）
+- 本项目旨在设计一个实验性的跨站广告投放系统Web课程作业，实现匿名用户的个性化广告推荐。项目结构如下：
 
-本项目旨在设计一个实验性的跨站广告投放系统Web课程作业，实现匿名用户的个性化广告推荐。项目结构如下：
+[[ad-site](https://github.com/YuujinT/ad-system)]：	广告提供服务器
 
-- **广告服务器（ad-site）**（部署在独立服务器上）
-  
-  - 提供独立网站可以用的一般广告显示api格式：
-  
-      ​	业务网站发送 GET 请求，附带内容为uid+contenType
-  
-      ​	`ad-site`中实现一个`normalAd Servlet`，用来下发图片类广告素材，给业务网站的`ad.js`来显示
-  
-  - 针对于视频网站上【视频类型广告】的单独实现：使用单独的视频内容下发ap
-  
-      ​	由视频网站的播放器去发送 GET 请求，附带内容为uid+contenType
-      ​	广告站API的videoAd Servlet根据uid去数据库里执行匹配兴趣逻辑，然后返回一个广告素材OutputStream视频流
-      
-  
-      
-      ​	内容渲染由视频网站实现
-  
-  - 提供独立网站可以用的用户兴趣收集api接口规范说明，要求独立网站根据要求的json格式发送收集到的用户兴趣数据
-  
-  - 提供一个基于{ fingerprint（后统一称呼为userID）+ 兴趣标签内容 }json类型格式的数据上报 API 接口，以接收信息
-  
-  - 维持一个后端数据库数据库（使用mysql5.7)，记录服务器维护的用户兴趣统计信息（用户信息、兴趣标签、兴趣指数情况）
-  
-  - 维持一个后端数据库数据库（使用mysql5.7)，记录服务器托管的广告源数据信息（内容包含广告的：所属兴趣标签，文件类型，在服务器上的文件源地址）
-  
-  - 提供一个基于userID的广告推荐下发api接口
-  
-  - 提供广告主的用户资源管理系统：（用户密码型）
-          用于管理自己在广告站上托管的广告资源（上传，删除）等
-  
-- **三个独立网站**（部署在3个独立的服务器上）
-  - `mall-site`：购物网站（静态风格界面）
-  - `video-site`：视频网站（实现视频播放功能，视频开头插入广告）
-  - `news-site`：新闻网站（静态风格界面）
-  - 每个网站通过引入广告商的 JS 脚本，与广告服务器数据交互，生成个性化广告推荐。
-  
-    
+[[news-site](https://github.com/YuujinT/ad-system/tree/news)]	新闻网站
 
-### 1.2  任务分配：
+[[shop-site](https://github.com/YuujinT/ad-system/tree/shop)]	购物网站
 
-**广告商部分** ： [YuujinT]（https://github.com/YuujinT/）
-
-**3个社媒设计：** [GAODUAN11 (Duan Gao)] (https://github.com/GAODUAN11)
-
-**开发周期：2025.11 ~ 2025.12**
-
-### 1.3 项目地址：
-
-​	[YuujinT/ad-system: 团队Web课后作业]： https://github.com/YuujinT/ad-system
+[[video-site](https://github.com/YuujinT/ad-system/tree/video)]	视频分享网站
 
 ------
+
+# ad-site 开发文档
+
+## 1. 总览
+
+### 	1.1 项目概述：
+
+- 目标：提供跨站匿名广告投放与兴趣上报服务API，并为广告业主提供素材管理后台。
+
+- 部署形态：Tomcat + Servlet + JSP，WAR 包（`ad-site.war`），静态上传目录通过 Tomcat Context 映射到宿主机物理路径。
+
+- 只聚焦 ad-site，本文件不包含其他业务站点。
+
+- 架构：Servlet 仅做输入/输出与简单校验，业务落在 Service 层；DAO 负责持久化，JSP 负责展示。
+
+  
+
+  ### 1.2  任务分配：
+
+  - **广告商部分** ： [YuujinT]（https://github.com/YuujinT/）
+
+  - **3个社媒设计：** [GAODUAN11 (Duan Gao)] (https://github.com/GAODUAN11)
+
+  - **开发周期：2025.11月底 ~ 2025.12月**
+
+  
+
+  ### 1.3 项目地址：
+
+  ​	[YuujinT/ad-system: 团队Web课后作业]： https://github.com/YuujinT/ad-system
 
 ## 2. 技术栈
+| 模块 | 技术 |
+| --- | --- |
+| Web框架 | Jakarta EE Servlet 6 + Tomcat + JSP + JSTL |
+| 数据持久化 | MySQL（使用HikariCP 连接池，MySQL Connector/J 9.x） |
+| JSON序列化 | Jackson 2.17（解析 JSON 请求/响应） |
+| 前后端通信 | JavaScript Fetch |
+| 用户识别 | 浏览器指纹 [FingerprintJS](https://github.com/fingerprintjs/fingerprintjs) |
 
-| 模块       | 技术                           |
-| ---------- | ------------------------------ |
-| Web 服务器 | Tomcat (Jakarta EE / Servlet)  |
-| 数据库     | MySQL                          |
-| 前端       | HTML + JavaScript (ad.js 脚本) |
-| 网络通信   | Fetch (主动同步用户数据)       |
-| 用户识别   | 浏览器指纹 FingerprintJS 库    |
+## 3. 功能一览
+- 广告业主登录：`/auth/login`（表单，`login.jsp`）。
+- 素材管理（需登录）：
+  - 上传：`/asset/upload`，生成 UUID 文件名，写入 Tomcat 映射的 `uploads` 物理目录，并记录 DB。
+  - 列表/预览/删除：`/asset/list`（JSP `assets.jsp` 展示，点击文件名走 `/asset/file?name=...` 预览；删除走 `/asset/delete?id=...`，会同时删除磁盘文件和 DB 记录）。
+- 兴趣上报 API：`/api/collectInterest`（POST JSON）。
+- 广告下发 API：`/api/ad`（GET 流式返回图片/视频素材）。图片与视频统一由同一个 Servlet 处理，依据 `contentType` 选择素材。
 
-------
+## 4. 数据库设计（schema.sql）
+- 库：`ad_site`
+- 表：
+- `ad_owner`：广告业主账号
 
-## 3. 核心设计思路
+| 字段        | 类型                 | 说明              |
+| ----------- | -------------------- | ----------------- |
+| id          | BIGINT PK AUTO_INCREMENT | 主键              |
+| AdAccount   | VARCHAR(64) UNIQUE   | 账号名            |
+| Password    | VARCHAR(128)         | 密码              |
+| created_at  | TIMESTAMP            | 创建时间          |
 
-### 3.1 用户 ID 生成
+- `ad_assets`：素材表
 
-- 每个网站的jsp都会加载这样一段js： 
+| 字段        | 类型             | 说明                                |
+| ----------- | ---------------- | ----------------------------------- |
+| id          | BIGINT PK AUTO_INCREMENT | 主键                           |
+| owner_id    | VARCHAR(64)      | 业主账号（引用 `ad_owner.AdAccount`） |
+| file_name   | VARCHAR(255)     | UUID 重命名后的文件名（含扩展名）    |
+| content_type| VARCHAR(128)     | MIME 类型（如 image/png, video/mp4） |
+| interest_tag| VARCHAR(32)      | 标签（五选一）                      |
+
+- `user_tags`：用户兴趣计数
+
+| 字段       | 类型        | 说明                  |
+| ---------- | ----------- | --------------------- |
+| id         | VARCHAR(64) PK | 用户 ID（fingerprint） |
+| technology | INT DEFAULT 0 | 标签访问次数          |
+| gaming     | INT DEFAULT 0 | 标签访问次数          |
+| travel     | INT DEFAULT 0 | 标签访问次数          |
+| sports     | INT DEFAULT 0 | 标签访问次数          |
+| food       | INT DEFAULT 0 | 标签访问次数          |
+- 预置账号：`demo_owner / demo123`。
+
+## 5. 配置
+- 数据源：`src/main/resources/application.properties`
+  - `db.url=jdbc:mysql://127.0.0.1:3306/ad_site?useSSL=false&serverTimezone=UTC`
+  - `db.driver=com.mysql.cj.jdbc.Driver`
+  - `db.username=...`（按环境修改）
+  - `db.password=...`（按环境修改）
+  - `db.pool.size=20`
+- 上传目录：通过 Tomcat `<Context>` 将 `/uploads` 映射到宿主机目录（例：`docBase="/data/uploads"`），Servlet 仅写入该目录，不写入 WAR 内部。
+- 指纹js加载：`fp.js` `fp-logic.js` 放入`webapp` ，编写网站js实现指纹和用户兴趣。
+
+## 6. API 规范说明
+### 6.1 兴趣上报 API — `/api/collectInterest` (POST JSON)
+- 请求头：`Content-Type: application/json`
+- 请求体：
+```json
+{ "id": "<fingerprint>", "tag": "technology|gaming|travel|sports|food" }
+```
+- 行为：
+  - 若 `id` 不存在则插入新行，目标标签计数 +1；存在则对该标签计数 +1。
+  - `tag` 为空或不是预设`supportedTags`中的`TAG_COLUMNS` → 400 Bad Request。
   
+- 响应：204 No Content。
+
+- Example：
+
   ```js
-  <!-- 1. 先引入库文件 (必须第一个) -->
-  <!-- 这会创建全局变量 FingerprintJS -->
+  async function reportInterest(userId, tag) {
+      if (!userId) {
+          throw new Error('缺少用户 ID，已取消上报');
+      }
+      if (!tag) {
+          return;
+      }
+      const res = await fetch('http://????:8080/ad-site/api/collectInterest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: userId, tag })
+      });
   
-  <script src="/path/to/fp.js"></script>
-  
-  <!-- 2. 再引入生成器逻辑 (必须第二个) -->
-  <!-- 这会使用 FingerprintJS 生成 ID，并创建DOM页面的全局变量 window.visitorId -->
-  
-  <script src="/path/to/fp-logic.js"></script>
+      if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`上报失败 [${res.status}]: ${text}`);
+      }
+  }
   ```
+
+### 6.2 广告下发 API — `/api/ad` (GET)
+- 查询参数：`id=<fingerprint>&contentType=image|video`
+
+- 逻辑：
+  - 从 `user_tags` 找到该用户计数最高的标签；若有多项并列，随机挑一项；若全 0 或无记录，随机选一个标签。
+  - 在 `ad_assets` 中按标签 + `content_type` 过滤，随机挑选一条，流式输出文件内容。
+  - 未找到素材 → 404。
   
-  其中`fp.js`和`fp-logic.js`已经编写完成，由ad-site提供给外部业务网站
-  调用开源的JavaScript的fingerprintjs脚本：**根据浏览器 fingerprint 生成 ID**，全局变量叫visitorId
+- 响应头：
+  - `Content-Type` 与素材保持一致
   
-  *浏览器指纹是**一种用于识别和追踪设备的技术，**它通过收集用户浏览器和设备的多种属性（如用户代理、屏幕分辨率、插件列表、字体、Canvas和WebGL特性等）来生成一个独特的标识符，用于识别和区分用户。*
+- Example (Pictures):
 
-------
+  ```js
+  async function loadImageAd(userId, contentType) {
+      const res = await fetch('http://????:8080/ad-site/api/ad?id=' + encodeURIComponent(userId) + '&contentType=' + encodeURIComponent(contentType));
+  
+      if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`广告加载失败 [${res.status}]: ${text}`);
+      }
+  
+      const adContainer = document.getElementById('adContainer');
+      adContainer.innerHTML = '';
+  
+      const blob = await res.blob();
+      const imageUrl = URL.createObjectURL(blob);
+  
+      const img = document.createElement('img');
+      img.className = 'ad-image';
+      img.src = imageUrl;
+      img.alt = '广告内容';
+  
+      adContainer.appendChild(img);
+  }
+  ```
 
-### 3.2 用户兴趣数据的实现
+## 7. 广告业主后台
+- 登录页：`/login.jsp` → `AuthServlet`（成功跳转 `/WEB-INF/views/assets.jsp`）。
+- 素材列表：`assets.jsp` 渲染 DB 数据，提供：
+  - 预览：锚点链接 `/asset/file?name=...`，直接输出文件流。
+  - 删除：`/asset/delete?id=...`，同时删除 DB 记录与物理文件。
+- 上传页：`upload.jsp`，表单提交到 `/asset/upload`（multipart）。
+  - 服务端生成 UUID 文件名，保留扩展名；写入映射目录；记录四个字段：文件名 / owner / contentType / interest_tag。
 
-- 为了简化用户兴趣的设计，广告商的数据处理极度简化，只根据：【用户 + 最感兴趣的广告标签 + 请求的广告类型】 的依据来判定下发的广告内容
+## 8. 构建与运行
+1. 初始化
 
-​	这个项目里会出现的所有兴趣标签限制为若干固定标签形成的集合，在独立网站上给内容背后标注的内容标签也是从这个集合里选取的。
-​	这样，在广告服务端的【用户兴趣】SQL数据库里，每一条数据记录设计为：
-
-​		用户ID【主键】+标签1的兴趣指数+标签2的兴趣指数+标签3的兴趣指数+……
-
-​	每上报的一次访问，兴趣指数+1
-
-- 读取兴趣数据：每当访问一次
-
-### 3.3 用户行为标签收集与同步
-
-- 用户在网站上的操作（点击带有兴趣标签的元素）由广告 JS 脚本收集上报
-- 脚本通过 **fetch** 主动向广告商 API 发送 JSON 数据：
-
+   数据库
+```sql
+SOURCE src/main/resources/schema.sql;
 ```
-{
-  "ID": "",
-  "tags": ""
-}
+`pom.xml`修改上传素材的路径：upload.dir
+
+`application.properties`中配置正确的mysql连接参数
+
+2) 打包 WAR
+```bash
+.\mvnw.cmd clean package
 ```
+3) 部署
+- 将 `target/ad-site-1.0-SNAPSHOT.war` 部署至 Tomcat ，重命名为ad-site
 
-- 广告服务器收到数据后：
-  - 查找数据库里该用户的信息
-  - 若不存在这个用户→初始化一个新用户
-  - 若存在 → 更新对应的兴趣标签次数记录（visit_count +=1）
-- 每个网站仅负责生成 ID 与上传标签信息，用户画像和推荐逻辑由广告商服务器统一维护
+4) 访问
+- 业主后台：`http://<host>:<port>/ad-site/login.jsp`
+- API：`/ad-site/api/...`
 
-------
+## 9. 行为细节与策略
+- 标签集合设置为：`technology | gaming | travel | sports | food`。
+- 并列最高计数标签随机挑选，避免偏向首项。
+- 素材删除：先删磁盘，再删 DB，若磁盘缺失则记录日志但不阻塞。
+- CORS：对 API 统一设置允许跨域（默认 `*`）。
+- 上传重名规避：强制 UUID + 原扩展名。
+- 无标签用户的广告返回：在可用素材中随机挑选符合请求 contentType 的素材。
 
-### 3.4 兴趣标签管理与广告推荐
-
-- 广告服务器根据用户ID、兴趣标签的访问情况生成个性化广告
-- 广告数据下发给当前浏览器，由广告 JS 在页面中渲染
-
-------
-
-## 4. 数据库设计（广告商`ad-site`侧 MySQL）
-
-使用HikariCP的方式连接到本地数据库。
-测试用的身份：
-127.0.0.1:3306
-user : ?
-
-password : ?
-
-
-
-### 4.1 user_tags 表
-
-| 字段       | 类型           | 描述         |
-| ---------- | -------------- | ------------ |
-| ID         | VARCHAR(64) PK | 用户 ID      |
-| technology | INT            | 标签访问次数 |
-| gaming     | INT            | 标签访问次数 |
-| travel     | INT            | 标签访问次数 |
-| sports     | INT            | 标签访问次数 |
-| food       | INT            | 标签访问次数 |
+## 10. 目录速览
+- `src/main/java/com/example/adsite/controller`：Servlet（`AdApiServlet`、`InterestIngestServlet`、`UploadAssetServlet` 等）。
+- `src/main/java/com/example/adsite/service`：`AdService` / `InterestService` 业务逻辑。
+- `src/main/java/com/example/adsite/dao`：`AdAssetDao`、`UserTagDao`、`OwnerDao`。
+- `src/main/java/com/example/adsite/config`：`DataSourceConfig`（HikariCP）。
+- `src/main/webapp`：`login.jsp`、`error-invalid-login.jsp`、`WEB-INF/views/*.jsp`。
+- `src/main/resources/schema.sql`：数据库建表与示例账号。
 
 ------
-
-## 5. 一次完整流程概览示意
-
-## 	**mall-site / news-site**
-
-1. 用户访问 mall-site / news-site 页面
-2. 页面加载 `ad.js` 以准备展示广告
-3. 指纹JS 收集浏览器 fingerprint 并生成 ID
-4. 网站自建的JS脚本 收集“用户访问标签”的动作唤起触发器，通过广告站的api格式规范以 fetch 方式上报
-6. 广告站服务器匹配 用户指纹ID：
-   - 若已存在 → 更新对应标签记录次数
-   - 若不存在 → 创建新记录并统计
-6. 广告站生成个性化广告返回给网站，以 `ad.js` 实现内容渲染
-
-
-
-## 	关于**video-site**中的视频广告播放逻辑解释：
-
-1. 用户访问 video-site 页面，打开某个视频播放界面
-2. 加载视频播放器，页面根据用户ID向广告站api请求广告视频素材
-3. 在视频开头播放一段时间的广告视频，然后开始正常播放原视频
-
-------
-
-## 6. 特点与优点
-
-1. **简单实现**：每个网站直接用 fingerprintJS 的方法生成 ID
-2. **隐私保护**：不存储原始 fingerprint
-3. **跨站识别**：同一浏览器在不同网站生成的 fingerprint ID一致 → 可被广告商统一识别
-4. **兼容实验环境**：无域名要求，仅通过 IP + API 即可完成实验
-
-------
-
