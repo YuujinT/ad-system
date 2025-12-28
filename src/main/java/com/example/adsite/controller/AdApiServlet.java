@@ -3,7 +3,6 @@ package com.example.adsite.controller;
 import com.example.adsite.config.ServiceRegistry;
 import com.example.adsite.model.AdAsset;
 import com.example.adsite.service.AdService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Locale;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -19,7 +18,6 @@ import java.util.Optional;
  * Responds with the binary stream of the selected asset.
  */
 public class AdApiServlet extends HttpServlet {
-    private final ObjectMapper mapper = new ObjectMapper();
     private AdService adService;
 
     @Override
@@ -39,7 +37,7 @@ public class AdApiServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "missing contentType");
             return;
         }
-        AdAsset.Format format = resolveFormat(contentTypeParam);
+        AdAsset.Format format = adService.parseFormat(contentTypeParam);
         if (format == AdAsset.Format.UNKNOWN) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unsupported contentType");
             return;
@@ -50,20 +48,17 @@ public class AdApiServlet extends HttpServlet {
             return;
         }
         AdAsset ad = adOpt.get();
-        // Stream file content via AssetFileServlet path to respect configured upload dir
         String assetPath = req.getServletContext().getInitParameter("upload.dir");
         if (assetPath == null || assetPath.isBlank()) {
             assetPath = req.getServletContext().getRealPath("/uploads");
         }
-        java.nio.file.Path file = java.nio.file.Path.of(assetPath, ad.getFileName());
-        if (!java.nio.file.Files.exists(file)) {
+        Optional<Path> fileOpt = adService.resolveAssetFile(ad, assetPath);
+        if (fileOpt.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "asset file missing");
             return;
         }
-        String mime = java.nio.file.Files.probeContentType(file);
-        if (mime == null) {
-            mime = ad.getContentType();
-        }
+        Path file = fileOpt.get();
+        String mime = adService.detectMime(file, ad);
         resp.setContentType(mime);
         resp.setHeader("Content-Disposition", "inline; filename=\"" + ad.getFileName() + "\"");
         resp.setContentLengthLong(java.nio.file.Files.size(file));
@@ -71,16 +66,4 @@ public class AdApiServlet extends HttpServlet {
             java.nio.file.Files.copy(file, os);
         }
     }
-
-    private AdAsset.Format resolveFormat(String contentTypeParam) {
-        String lower = contentTypeParam.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("video")) {
-            return AdAsset.Format.VIDEO;
-        }
-        if (lower.startsWith("image")) {
-            return AdAsset.Format.IMAGE;
-        }
-        return AdAsset.Format.UNKNOWN;
-    }
 }
-

@@ -3,7 +3,6 @@ package com.example.adsite.service;
 import com.example.adsite.dao.UserTagDao;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class InterestService {
@@ -17,12 +16,7 @@ public class InterestService {
         userTagDao.incrementTags(userId, tags);
     }
 
-    public Map<String, Integer> findTagCounts(String userId) {
-        return userTagDao.findTagCounts(userId);
-    }
-
     public Optional<String> findDominantTag(String userId) {
         return userTagDao.findDominantTag(userId);
     }
 }
-

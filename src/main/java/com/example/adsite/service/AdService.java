@@ -3,7 +3,9 @@ package com.example.adsite.service;
 import com.example.adsite.dao.AdAssetDao;
 import com.example.adsite.model.AdAsset;
 
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Optional;
 
 public class AdService {
@@ -26,8 +28,33 @@ public class AdService {
         return adAssetDao.findAnyAd(format);
     }
 
-    public Map<String, Integer> loadStats(String userId) {
-        return interestService.findTagCounts(userId);
+    public AdAsset.Format parseFormat(String contentTypeParam) {
+        if (contentTypeParam == null) {
+            return AdAsset.Format.UNKNOWN;
+        }
+        String lower = contentTypeParam.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("video")) {
+            return AdAsset.Format.VIDEO;
+        }
+        if (lower.startsWith("image")) {
+            return AdAsset.Format.IMAGE;
+        }
+        return AdAsset.Format.UNKNOWN;
+    }
+
+    public Optional<Path> resolveAssetFile(AdAsset ad, String uploadDir) {
+        if (uploadDir == null || uploadDir.isBlank()) {
+            return Optional.empty();
+        }
+        Path file = Path.of(uploadDir, ad.getFileName());
+        if (!Files.exists(file)) {
+            return Optional.empty();
+        }
+        return Optional.of(file);
+    }
+
+    public String detectMime(Path file, AdAsset ad) throws java.io.IOException {
+        String mime = Files.probeContentType(file);
+        return mime != null ? mime : ad.getContentType();
     }
 }
-

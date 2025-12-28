@@ -3,7 +3,7 @@ USE ad_site;
 
 DROP TABLE IF EXISTS ad_assets;
 DROP TABLE IF EXISTS ad_owners;
-DROP TABLE IF EXISTS ad_accounts;
+DROP TABLE IF EXISTS user_tags;
 
 CREATE TABLE IF NOT EXISTS ad_owner (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS ad_assets (
     CONSTRAINT fk_asset_owner FOREIGN KEY (owner_id) REFERENCES ad_owner(AdAccount)
 );
 
-DROP TABLE IF EXISTS user_tags;
+
 CREATE TABLE IF NOT EXISTS user_tags (
     id VARCHAR(64) PRIMARY KEY,
     technology INT DEFAULT 0,

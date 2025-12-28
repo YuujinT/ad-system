@@ -26,11 +26,4 @@ public class AdAsset {
     public String getFileName() { return fileName; }
     public String getContentType() { return contentType; }
     public String getInterestTag() { return interestTag; }
-
-    public Format getFormat() {
-        if (contentType == null) return Format.UNKNOWN;
-        if (contentType.startsWith("video")) return Format.VIDEO;
-        if (contentType.startsWith("image")) return Format.IMAGE;
-        return Format.UNKNOWN;
-    }
 }

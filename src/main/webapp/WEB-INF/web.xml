@@ -21,7 +21,7 @@
 
     <context-param>
         <param-name>upload.dir</param-name>
-        <param-value>D:/Softs/Web/uploads</param-value>
+        <param-value>/usr/uploads</param-value>
     </context-param>
 
     <servlet>
@@ -67,15 +67,6 @@
     <servlet-mapping>
         <servlet-name>InterestIngestServlet</servlet-name>
         <url-pattern>/api/collectInterest</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>HealthServlet</servlet-name>
-        <servlet-class>com.example.adsite.controller.HealthServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>HealthServlet</servlet-name>
-        <url-pattern>/health</url-pattern>
     </servlet-mapping>
 
 

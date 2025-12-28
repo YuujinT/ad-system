@@ -1,22 +1,20 @@
 package com.example.adsite.controller;
 
 import com.example.adsite.config.ServiceRegistry;
-import com.example.adsite.dao.AdAssetDao;
-import com.example.adsite.model.AdAsset;
+import com.example.adsite.service.AssetService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.List;
 
 public class AdAssetServlet extends HttpServlet {
-    private AdAssetDao adAssetDao;
+    private AssetService assetService;
 
     @Override
     public void init() throws ServletException {
-        adAssetDao = ServiceRegistry.adAssetDao();
+        assetService = ServiceRegistry.assetService();
     }
 
     @Override
@@ -26,8 +24,7 @@ public class AdAssetServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
         }
-        List<AdAsset> assets = adAssetDao.findByOwner(accountName);
-        req.setAttribute("assets", assets);
+        req.setAttribute("assets", assetService.findByOwner(accountName));
         req.setAttribute("accountName", accountName);
         req.getRequestDispatcher("/WEB-INF/views/assets.jsp").forward(req, resp);
     }
