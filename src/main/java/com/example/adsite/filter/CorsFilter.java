@@ -16,10 +16,9 @@ public class CorsFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
 
         String origin = req.getHeader("Origin");
-        if (origin != null && !origin.isBlank()) {
-            resp.setHeader("Access-Control-Allow-Origin", origin);
-            resp.setHeader("Vary", "Origin");
-        }
+        // If no Origin header is present (same-origin or some tools), default to * to keep browsers happy.
+        resp.setHeader("Access-Control-Allow-Origin", (origin == null || origin.isBlank()) ? "*" : origin);
+        resp.setHeader("Vary", "Origin");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Allow-Methods", String.join(",", ALLOWED_METHODS));
@@ -33,4 +32,3 @@ public class CorsFilter implements Filter {
         chain.doFilter(request, response);
     }
 }
-

@@ -92,12 +92,17 @@ public class UserTagDao {
         if (max <= 0) {
             return Optional.empty();
         }
+        List<String> topTags = new ArrayList<>();
         for (String column : TAG_COLUMNS) {
             if (counts.getOrDefault(column, 0) == max) {
-                return Optional.of(column);
+                topTags.add(column);
             }
         }
-        return Optional.empty();
+        if (topTags.isEmpty()) {
+            return Optional.empty();
+        }
+        int pick = java.util.concurrent.ThreadLocalRandom.current().nextInt(topTags.size());
+        return Optional.of(topTags.get(pick));
     }
 
     private void ensureUserExists(String userId) {
