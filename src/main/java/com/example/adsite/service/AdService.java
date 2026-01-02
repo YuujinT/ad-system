@@ -20,7 +20,7 @@ public class AdService {
     public Optional<AdAsset> pickAdForUser(String userId, AdAsset.Format format) {
         Optional<String> tagOpt = interestService.findDominantTag(userId);
         if (tagOpt.isPresent()) {
-            Optional<AdAsset> tagAd = adAssetDao.findTopAdForTag(tagOpt.get(), format);
+            Optional<AdAsset> tagAd = adAssetDao.findRandomAdForTag(tagOpt.get(), format);
             if (tagAd.isPresent()) {
                 return tagAd;
             }
