@@ -1,5 +1,115 @@
-# Vue 3 + Vite
+# 新闻网站
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+这是一个基于Vue 3和Vite构建的现代化新闻网站前端项目，实现了智能广告接收功能，能够根据用户的新闻阅读偏好接收并展示相关广告内容。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 项目概述
+
+本项目是一个完整的新闻网站前端，提供新闻浏览、分类查看和新闻详情阅读功能。系统集成了智能广告接收机制，通过向服务器发送用户行为数据来接收个性化广告内容。
+
+## 项目结构
+
+```
+firstproject/
+├── public/
+├── src/
+│   ├── assets/           # 静态资源
+│   ├── components/       # 可复用组件
+│   ├── router/           # 路由配置
+│   ├── views/            # 页面视图组件
+│   │   ├── HomeView.vue  # 首页视图
+│   │   ├── NewsListView.vue # 新闻列表视图
+│   │   ├── NewsDetailView.vue # 新闻详情视图
+│   │   ├── ad.js         # 广告系统核心逻辑
+│   │   ├── fp-logic.js   # 用户指纹识别逻辑
+│   │   └── fp.js         # FingerprintJS库
+│   ├── App.vue           # 根组件
+│   ├── main.js           # 应用入口
+│   └── style.css         # 全局样式
+├── package.json          # 项目依赖配置
+└── README.md             # 项目说明文档
+```
+
+## 技术栈
+
+- **Vue 3**: 使用 Composition API 构建响应式UI组件
+- **Vite**: 快速的开发构建工具
+- **Vue Router 4**: 实现单页面应用路由管理
+- **FingerprintJS**: 用于用户设备识别和追踪
+- **Fetch API**: 用于前后端通信
+
+## 新闻网站功能
+
+### 1. 新闻浏览功能
+
+- **首页**: 展示最新新闻内容
+- **分类浏览**: 按类别（科技、游戏、旅游、体育、美食等）展示新闻
+- **详情阅读**: 提供完整的新闻内容阅读页面
+
+### 2. 智能广告接收
+
+系统通过以下流程实现基于新闻阅读行为的广告接收：
+
+- **用户识别**: 利用FingerprintJS库生成唯一的用户设备指纹
+- **行为上报**: 根据用户访问的新闻分类页面自动收集并上报兴趣标签
+- **广告请求**: 向服务器发起广告请求，携带用户ID和内容类型参数
+- **个性化接收**: 服务器根据用户兴趣返回相关广告内容
+- **图片渲染**: 接收服务器返回的二进制广告图片数据并渲染到页面
+
+具体实现位于 [src/views/ad.js](./src/views/ad.js) 文件中的 [loadImageAd](./src/views/ad.js#L70-L103) 和 [reportInterest](./src/views/ad.js#L50-L68) 函数。
+
+### 3. 路由设计
+
+- **首页**: `/` - 展示最新新闻
+- **分类页面**: `/category/:category` - 如 `/category/technology`, `/category/gaming` 等
+- **新闻详情**: `/news/:id` - 如 `/news/123`
+
+## 工作流程
+
+1. **页面加载**: 应用启动时，系统首先初始化用户设备指纹
+2. **URL分析**: 解析当前访问的URL路径，判断是否需要上报兴趣标签
+3. **兴趣上报**: 如果是分类页面（如科技、游戏、旅游等），则将分类标签上传到服务器
+4. **广告请求**: 根据用户指纹获取个性化广告内容
+5. **内容展示**: 在页面上展示接收到的广告图片
+
+## 代码组织
+
+- **[fp-logic.js](./src/views/fp-logic.js)**: 负责初始化FingerprintJS库并生成用户唯一标识
+- **[ad.js](./src/views/ad.js)**: 包含广告接收和兴趣标签上报的核心业务逻辑
+- **[main.js](./src/main.js)**: 应用入口文件，初始化Vue应用和全局依赖
+- **[App.vue](./src/App.vue)**: 根组件，包含导航栏和路由视图
+- **[views/](./src/views/)**: 包含新闻相关的视图组件
+
+## 导航功能
+
+网站提供完整的导航系统，用户可以通过顶部导航栏快速访问不同新闻分类：
+
+- 科技
+- 游戏
+- 旅游
+- 体育
+- 美食
+
+## 运行项目
+
+要运行此新闻网站，请确保您已安装Node.js环境，然后执行以下命令：
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+```
+
+## 特色功能
+
+- **智能新闻分类**: 自动识别不同类型的新闻分类页面
+- **无感用户追踪**: 使用设备指纹技术，无需用户登录即可识别
+- **动态广告接收**: 根据用户新闻阅读行为接收个性化广告内容
+- **响应式设计**: 支持桌面和移动设备访问
+
+
+这个新闻网站项目展示了如何在Vue 3应用中集成智能广告接收系统，通过分析用户的新闻阅读行为来接收个性化广告内容，同时保持良好的用户体验。
